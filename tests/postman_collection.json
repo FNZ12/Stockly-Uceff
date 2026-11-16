@@ -1,0 +1,981 @@
+{
+  "info": {
+    "name": "Stockly API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Execute na ordem. A sessão PHP é mantida pelo cookie jar do Postman. Ajuste baseUrl conforme seu ambiente."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost/stockly/public"
+    },
+    {
+      "key": "csrf",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Obter token CSRF (inicia a sessão)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=auth/csrf",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "auth/csrf"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "pm.collectionVariables.set('csrf', j.data.csrf_token);",
+              "pm.test('CSRF obtido', () => pm.expect(j.success).to.be.true);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Login (válido)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "auth/login"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@stockly.com\",\n  \"senha\": \"admin123\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const j = pm.response.json();",
+              "if (j.data) pm.collectionVariables.set('csrf', j.data.csrf_token);",
+              "pm.test('Login OK', () => pm.expect(j.success).to.be.true);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2b. Login (senha incorreta) -> 401",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "auth/login"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@stockly.com\",\n  \"senha\": \"errada\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=dashboard",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "dashboard"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Listar categorias",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "categorias"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Criar categoria",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "categorias"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Brinquedos\",\n  \"descricao\": \"Brinquedos e jogos\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Listar produtos (busca + categoria)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=produtos&q=mouse&categoria=2",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "produtos"
+            },
+            {
+              "key": "q",
+              "value": "mouse"
+            },
+            {
+              "key": "categoria",
+              "value": "2"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Consultar produto por id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=produtos&id=1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "produtos"
+            },
+            {
+              "key": "id",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Criar produto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "produtos"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"TST-001\",\n  \"nome\": \"Produto de teste\",\n  \"id_categoria\": 2,\n  \"preco\": 25.5,\n  \"quantidade\": 0,\n  \"estoque_minimo\": 5\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8b. Criar produto com código duplicado -> 409",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "produtos"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"TST-001\",\n  \"nome\": \"Duplicado\",\n  \"id_categoria\": 2,\n  \"preco\": 10,\n  \"quantidade\": 0,\n  \"estoque_minimo\": 1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Editar produto (id=1)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=produtos&id=1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "produtos"
+            },
+            {
+              "key": "id",
+              "value": "1"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"INF-001\",\n  \"nome\": \"Mouse sem fio\",\n  \"id_categoria\": 2,\n  \"preco\": 62.9,\n  \"estoque_minimo\": 5,\n  \"status\": \"ativo\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Registrar entrada (+10)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=movimentacoes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "movimentacoes"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"entrada\",\n  \"id_produto\": 1,\n  \"quantidade\": 10,\n  \"observacao\": \"Compra fornecedor\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Registrar saída (-3)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=movimentacoes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "movimentacoes"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"saida\",\n  \"id_produto\": 1,\n  \"quantidade\": 3,\n  \"observacao\": \"Venda\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Saída maior que o saldo -> 422 (bloqueada)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=movimentacoes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "movimentacoes"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"saida\",\n  \"id_produto\": 1,\n  \"quantidade\": 99999\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Histórico (filtros)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=movimentacoes&tipo=entrada&de=2026-01-01",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "movimentacoes"
+            },
+            {
+              "key": "tipo",
+              "value": "entrada"
+            },
+            {
+              "key": "de",
+              "value": "2026-01-01"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14. Estoque baixo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=estoque-baixo",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "estoque-baixo"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15. Relatório de estoque",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=relatorios&tipo=estoque",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "relatorios"
+            },
+            {
+              "key": "tipo",
+              "value": "estoque"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15b. Relatório de movimentações",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=relatorios&tipo=movimentacoes&de=2026-01-01",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "relatorios"
+            },
+            {
+              "key": "tipo",
+              "value": "movimentacoes"
+            },
+            {
+              "key": "de",
+              "value": "2026-01-01"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16. Inativar produto (id=2)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=produtos&id=2",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "produtos"
+            },
+            {
+              "key": "id",
+              "value": "2"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17. Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=auth/logout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "auth/logout"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18. Rota protegida sem login -> 401",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api.php?r=dashboard",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api.php"
+          ],
+          "query": [
+            {
+              "key": "r",
+              "value": "dashboard"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
